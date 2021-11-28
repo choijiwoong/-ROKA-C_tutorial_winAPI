@@ -16,5 +16,5 @@ int y=HIWORD(lParam);
 //POINT pt=MAKEPOINTS(lParam);
 
 //5. 마우스 관련 메시지에서 WPARAM은 아래와 같은 키보드와 마우스의 상태 조합(매크로)을 제공한다. 
-//MK_LBUTTON(0x01)_왼쪽 마우스가 눌렸는지, ML_RBUTTON(0x02), MK_SHIFT(0x04), MK_CONTROL(0x08), 
+//MK_LBUTTON(0x01)_왼쪽 마우스가 눌렸는지, MK_RBUTTON(0x02), MK_SHIFT(0x04), MK_CONTROL(0x08), 
 //MK_MBUTTON(0x10)_가운데 마우스 버튼이 눌렸는지, MK_XBUTTON1(0x20)_첫번째 X버튼이 눌러졌는지, MK_XBUTTON2(0x40)
