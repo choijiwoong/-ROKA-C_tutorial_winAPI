@@ -2,7 +2,7 @@
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 HINSTANCE g_hInst;
-LPSTR lpszClass="MyTimer";
+LPSTR lpszClass="MyTimer & RandGrp";
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdParam, int nCmdShow)
 {
@@ -36,13 +36,23 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmd
 	return Message.wParam;
 }
 
-#include <time.h> //For Function about Time
+void CALLBACK TimerProc(HWND hWnd, UINT uMsg, UINT idEvent, DWORD dwTime)
+{
+	HDC hdc;
+	int i;
+	hdc=GetDC(hWnd);
+	for(i=0; i<3000; i++)
+		SetPixel(hdc, rand()%1300, rand()%1000, RGB(rand()%256, rand()%256, rand()%256));
+	ReleaseDC(hWnd, hdc);
+}
+
+#include <time.h> //For Function about Time(ctime)
 LRESULT FAR PASCAL WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 {
 	HDC hdc;
 	PAINTSTRUCT ps;
 	time_t mytime;
-	static HANDLE hTimer;
+	static HANDLE hTimer, hTimer2, hTimer3;
 	static char *str;
 	
 	static RECT rt={100, 100, 400, 120};//for reduce time for redrawing
@@ -52,15 +62,25 @@ LRESULT FAR PASCAL WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lPara
 	{
 		case WM_CREATE://When Window is created. for initialization(like window constructor...?ㅋ) 
 			hTimer=(HANDLE)SetTimer(hWnd, 1, 1000, NULL);//Make Tiemr
+			hTimer2=(HANDLE)SetTimer(hWnd, 2, 5000, NULL);//Second Timer
+			hTimer3=(HANDLE)SetTimer(hWnd, 3, 100, (TIMERPROC)TimerProc);//Third Timer with TimerProcedure
 			str="";//For prevention of print garbage value in first time
 			SendMessage(hWnd, WM_TIMER, 1, 0);//For print Time to screen befor making MW_TIMER automatically.
 			//WM_TIMER's wParam is ID of Timer. 
 			return 0;
 		
-		case WM_TIMER:
-			time(&mytime);//Get time(WM_TIMER's called)
-			str=ctime(&mytime);//for convert to String
-			InvalidateRect(hWnd, &rt, TRUE);//REDRAWING just on designed section in rt
+		case WM_TIMER://We don't have to make case for hTimer3! It's WM_TImer is passed to it's procedure(TimerProc)
+			switch(wParam)
+			{
+				case 1:
+					time(&mytime);//Get time(WM_TIMER's called)
+					str=ctime(&mytime);//for convert to String
+					InvalidateRect(hWnd, &rt, TRUE);//REDRAWING just on designed section in rt
+					break;
+				case 2:
+					MessageBeep(MB_OK);//Make Beep per 5 seconds
+					break;
+			}
 			return 0;
 		
 		case WM_PAINT:
@@ -71,6 +91,8 @@ LRESULT FAR PASCAL WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lPara
 		
 		case WM_DESTROY:
 			KillTimer(hWnd, 1);//Remove Timer 
+			KillTimer(hWnd, 2);
+			KillTimer(hWnd, 3);
 			PostQuitMessage(0);
 			return 0;
 			
@@ -106,4 +128,21 @@ LRESULT FAR PASCAL WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lPara
 	WM_TIMER의 경우 wParam으로 ID를 넘기기에 1을 넘겨주자. 
 2.	두번째 문제는 화면의 깜빡임이 보인다는 건데, 이는 InvalidateRect(hWnd, NULL, TRUE)에서 NULL설정때문에 모든
 	윈도우를 다시 수정하기에 그렇다. 고로 무효화 영역을 최소화하여 Redrawing시간을 줄이자. 
+
+	[두 개의 타이머]
+1.	WM_TIMER하나로 처리하기에 wParam의 ID로 구분하여 작업을 처리하게 하자. 
+2.	16비트 윈도우즈에서는 최대 16개까지 설치가 가능하다. 
+
+	이 강의 너무 마음에 드네.. 예제 연결될 수 있게 해놨어..
+	
+	[Timer CALLBACK Procedure]
+1.	SetTimer의 TIMERPROC lpTimerFunc가 NULL이면 첫번째 인수인 hWnd로 WM_TIMER이 전달되는데, 이를 설정해두면 매 시간마다 이 함수가 대신 호출된다.
+	
+	VOID CALLBACK TimerProc(HWND hWnd, UINT uMsg, UINT idEvent, DWORD dwTime);
+	윈도우핸들, WM_TIMER, ID, 실행후 경과시간이 인자인데 사용 잘안한다. 
+2.	만약 SetPixel에서 무한 루프를 돌려버리면 도트는 잘 찍히지만 그 외에 다른 작업을 아무것도 못한다. WM_PAINT에서 다른 어떤 메시지도 받을 수 없는 상태가 되었기 때문이다. 
+	(win95부터 선점형 멀티태스킹으로 다른작업 전환 가능. procedure없이 WM_TIMER로도 구현이 가능하지만 콜백이 더 정확한 시간에 호출이 된다. 
+3.	CALLBACK function은 보통의 API함수들은 application에서 필요할 때 운영체제의 함수(TextOut, SetTimer...)를 사용하는 것과 달리
+	운영체제가 필요할때 application에서 호출하는 함수이다. 즉 호출방식이 거꾸로기에 callback function인 것이다.
+	callback fucntion은 운영체제에 의해 호출되는 프로그램 내부의 함수인데, WndProc은 운용체제만이 이 함수를 호출한다. 
 */
