@@ -27,11 +27,19 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmd
 			CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
 			NULL, (HMENU)NULL, hInstance, NULL);
 	ShowWindow(hWnd, nCmdShow);
+	//We can do global initialization at this. Because after makeing window by CreateWindow, WM_CREATE occurs.
+	//hTimer1=(HANDLE)SetTimer(hWnd, 1, 1000, NULL)
+	//hTimer2=(HANDLE)SetTimer(hWnd, 2, 5000, NULL)
+	//str="";
+	//SendMessage(hWnd, WM_TIMER, 1, 0);
 	
 	while(GetMessage(&Message,0,0,0)){
 		TranslateMessage(&Message);
 		DispatchMessage(&Message);
 	}
+	
+	//KillTimer(hWnd, 1);
+	//KillTimer(hWnd, 2);
 	
 	return Message.wParam;
 }
