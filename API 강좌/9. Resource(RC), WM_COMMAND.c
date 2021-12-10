@@ -59,7 +59,43 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmd
 
 long FAR PASCAL WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 {
-	switch(iMessage){
+	switch(iMessage)
+	{
+		case WM_COMMAND:
+			switch(LOWORD(wParam))//Get Menu's ID
+			{
+				case ID_FILE_MENU1:
+					MessageBox(hWnd, "Choose first menu.", "Menu Demo", MB_OK);
+					break;
+				case ID_FILE_MENU2:
+					MessageBox(hWnd, "Choose second menu.", "Menu Demo", MB_OK);
+					break;
+				case ID_FILE_EXIT:
+					PostQuitMessage(0);
+					break;
+			}
+			return 0;
 		
+		case WM_DESTROY:
+			PostQuitmessage(0);
+			return 0;
+		
+		default:
+			return DefWindowProc(hWnd, iMessage, wParam, lParam);
 	}
 }
+
+/*
+1.	메뉴 항목을 누르면 WM_COMMAND메시지가 전달되며, WPARAM의 LOWORD로 어느 메뉴를 선택했는지 구분할 수 있다. 
+2.	리소스 사용절차: 새 리소스 삽입(Visual C++)->리소스 종류 선택(MENU)->리소스 작성(리소스 편집기 이용)->스크립트 저장(프로젝트와 같은이름으로)->프로젝트에 리소스 포함(include, setting to WndClass)
+
+	[WM_COMMAND]
+1.	WM_COMMAND메시지는 메뉴 항목을 선택할 때 뿐만 아니라 엑셀러레이터를 누를 떄도 발생하며, 버튼&에디트 박스등의 컴트롤이 부모 윈도우로 통지메시지를 보낼때 발생한다.
+2.	WM_COMMAND의 추가정보는 아래와 같은 구조를 띠고 있다.
+	lParam_통지 메시지를 발생시킨 컨트롤의 윈도우 핸들(어디서 온 메시지인지를 핸들로)
+	LOWORD(wParam)_메뉴나 엑셀러레이터, 컨트롤의 ID
+	HIWORD(wParam)_컨트롤이 보내는 통지 메시지로 메뉴선택시 0, 엑셀러레이터 선택시 1 
+
+	[메뉴 편집기의 사용법]
+1.	 
+*/
