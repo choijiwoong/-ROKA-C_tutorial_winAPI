@@ -1,8 +1,9 @@
 /*
 	[가변 비율]
-1.	윈도우의 크기에 따라 작업영역도 바뀌게 하는 것은 코드나 좌표는 일정하게 유지하면서 윈도우의 확장을 변경하여 전체 좌표계의 범위를 조정하여 처리한다.
-2.	이때 사용되는 맵핑 모드가 MM_ISOTROPIC과 MM_ANISOTROPIC이며 아래의 함수와 예제를 참고한다. 
-
+1.	윈도우의 크기에 따라 작업영역도 바뀌게 하는 것은 코드나 좌표는 일정하게 유지하면서 윈도우의 확장을 변경하여 전체 좌표계의 범위를 조정하여 처리한다.(MM_ISOTROPIC, MM_ANISOTROPIC만 가능) 
+2.	이때 사용되는 맵핑 모드가 MM_ISOTROPIC(가로세로비율유지)과 MM_ANISOTROPIC(자유로운 변형)이며 아래의 함수는 윈도우와 뷰포트의 확장을 설정하며  예제를 참고한다.
+	BOOL SetWindowExtEx(HDC hdc, int nXExtent,  int nYExtent, LPSIZE lpSize);
+	BOOL SetViewportExtEx(HDC hdc, int nXExtent, int nYExtent, LPSIZE lpSize);
 
 */
 
@@ -62,11 +63,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 			BrB=CreateSolidBrush(RGB(0,0,255));
 			BrY=CreateSolidBrush(RGB(255,255,0));
 			
-			SetMapMode(hdc, MM_ANISOTROPIC);
-			SetWindowExtEx(hdc, 160, 100, NULL);
+			SetMapMode(hdc, MM_ANISOTROPIC);//Mapping mode to MM_ANISOTROPIC
+			//Set Mapping Mode to MM_ANISOTROPIC that can change window's extention. 
+			SetWindowExtEx(hdc, 160, 100, NULL);//Extend window. window's limit is(160, 100) to (0,0)
+			//Set Window's Extention to 160, 180
 			GetClientRect(hWnd, &rect);
-			SetViewportExtEx(hdc, rect.right, rect.bottom, NULL);
-			
+			//Get ClientRect that's in window(160, 180)
+			SetViewportExtEx(hdc, rect.right, rect.bottom, NULL);//Extend Viewport. Same limit with Window because we set right&bottom by rect(that is maded by window).
+			//Set Viewport's Extendtion to ClientRect's size.
+			//So if window's size is changed, than reSetWindowExtEx(Logid location). In that state, Get Client Rect and set Viewport that's location.
+			//(Window uses Logic location, Viewport use absolute location!)			
 			OldBr=(HBRUSH)SelectObject(hdc, BrR);
 			Rectangle(hdc, 20, 30, 130, 90);
 			SelectObject(hdc, BrB);
