@@ -8,7 +8,9 @@
 	LBN_DBLCLK, LBN_ERRSPACE, LBN_KILLFOCUS, LBN_SELCANCEL, LBN_SELCHANGE, LBN_SETFOCUS
 	 
 	[콤보 박스]
-1.	 
+1.	에디트 컨트롤과 리스트 박스를 결합시킨 것으로, 목록중에 하나를 선택할 수도 있고, 없으면 에디트에 직접 항목을 넣을 수도 있다.(화살표 누르지 말고 네모칸을 에디트처럼 직접 입력가능) 
+	리스트 박스와 달리 필요할 경우에만 목록을 열어 선택하기에 화면 공간을 적게 차지한다.
+2.	combobox윈도우 클래스를 사용하며 다음의 스타일(종류)를 가진다.(CBX_SIMPLE(에디트만), CBS_DROPDOWN(에디트+리스트박스), CBS_DROPDOWNLIST(리스트박스, 에디트 입력불가) 
 */
 
 #include <windows.h>
@@ -57,7 +59,10 @@ char Items[][15]={"Apple", "Orange", "Melon", "Graph", "Strawberry"};
 char str[128];
 HWND hList;
 
-LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
+#define ID_COMBOBOX 101
+HWND hCombo; 
+
+LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)//,,(msg, id), content
 {
 	int i;
 	switch(iMessage)
@@ -67,6 +72,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 					10,10,100,200, hWnd, (HMENU)ID_LISTBOX, g_hInst, NULL);//Make ListBox with LBS_NOTIFY
 			for(i=0; i<5; i++)
 				SendMessage(hList, LB_ADDSTRING, 0, (LPARAM)Items[i]);//Add items to hList by using LB_ADDSTRING Message(to Parent Window)
+				
+			hCombo=CreateWindow("combobox", NULL, WS_CHILD|WS_VISIBLE|CBS_DROPDOWN,
+					150,10,100,200, hWnd, (HMENU)ID_COMBOBOX, g_hInst, NULL);//Create Combo box
+			for(i=0; i<5; i++)
+				SendMessage(hCombo, CB_ADDSTRING, 0, (LPARAM)Items[i]);//sendMessage to combobox Items by LPARAM CB_ADDSTRING
+							
 			return 0;
 			
 		case WM_COMMAND:
@@ -84,6 +95,23 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 							//set window's text to string that we got
 							break;
 					}
+					break;
+				
+				case ID_COMBOBOX://for combo box. check id by wParam's LOWORD
+					switch(HIWORD(wParam))//check msg by wParam's HIWORD
+					{
+						case CBN_SELCHANGE://if Listbox is changed
+							i=SendMessage(hCombo, CB_GETCURSEL,0,0);//get choiced id to i of hCombo by message; CB_GETCURSEL
+							SendMessage(hCombo, CB_GETLBTEXT, i, (LPARAM)str);//get TEXT of hCombo's list by using i(choiced id) to str
+							SetWindowText(hWnd, str);//set window text to str
+							break;
+						
+						case CBN_EDITCHANGE://if Edit is changed
+							GetWindowText(hCombo, str, 128);//get hCombo's text to str
+							SetWindowText(hWnd, str);//and set
+							break;
+					}
+					break;
 			}
 			return 0;
 			
