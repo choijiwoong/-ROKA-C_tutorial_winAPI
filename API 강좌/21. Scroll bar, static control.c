@@ -12,6 +12,12 @@
 	ㄴLOWORD(wParam)의 값은 다음과 같다. SB_LINELEFT(SB_LINE_UP), SB_LINERIGHT(SB_LINEDOWN), SB_PAGELEFT(SB_PAGEUP), SB_PAGERIGHT(SB_PAGEDOWN),
 	SB_THUMBPOSITION, SB_THUMBTRACK
 	(<(SB_LINELEFT)----(SB_PAGELEFT)----ㅁ----(SB_PAGERIGHT)--->(SB_LINERIGHT)) 
+	
+	[스태틱]
+1.	가장 간단한 컨트롤로, 문자열을 보여주기만 한다. 윈도우 클래스를 static으로 설정해주면 된다.
+	여러개의 스태틱 컨트롤의 아이디를 같게 해도 된다. 잘 사용되지 않지만 스타일의 종류는 아래와 같다. default는 SS_LEFT이다.
+	SS_LEFT, SS_LEFTNOWORDWRAP, SS_CENTER, SS_RIGHT, SS_SIMPLE, SS_WHILEFRAME, SS_WHITERECTm SS_BLACKFRAME, SS_BLACKRECT, SS_GRAYFRAME, SS_GRAYRECT, SS_ICON, SS_NOPREFIX
+2.	일반 TextOut은 언제든지 지워질 수 있기에 WM_PAINT에서 계속 출력해야하는데, 스태틱은 스스로 메시지 처리가능한 윈도우이기에 신경쓰지 않아도 된다.	 
 */
 
 #include <windows.h>
@@ -84,6 +90,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 			SetScrollPos(hGreen, SB_CTL, 0, TRUE);
 			SetScrollRange(hBlue, SB_CTL, 0, 255, TRUE);
 			SetScrollPos(hBlue, SB_CTL, 0, TRUE);
+			
+			//static
+			CreateWindow("static", "Only Text", WS_CHILD|WS_VISIBLE,
+					120,260,100,25, hWnd, (HMENU)-1, g_hInst, NULL);
 			
 			return 0;
 			
